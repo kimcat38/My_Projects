@@ -1,0 +1,323 @@
+def best_score(pile1, pile2):
+    """
+    Is a dynamic programming function that solves the problem, where there are 2 stacks of coins and 2 players. This
+    function is to determine the optimal play for the coin taking game. This function determines the highest score of
+    player 1, but assuming both players play optimally.
+    :param pile1: the first stack of coin
+    :param pile2: the second stack of coin
+    :return: a tuple, the first element is the highest score player 1 can gain and the second is the choices made by the
+             players during the game
+
+    when building up the memorisation table, it takes the previous diagonal result and the previous previous above and
+    left result in the memo table and compares them and find the two minimum value of the 3 values and some those values
+    with current two coins that are the top of the stack.
+
+    After filling up the memo table, we back track the memo table. Starting at the last i and j cell in the memo table.
+    It takes the same 3 values again when it was filling up the memo table, out of the three, it takes the highest value
+    and continue to do so until there are no more coins left.
+    """
+    # Creating the memorisation table with pile1 representing the rows and pile 2 the columns
+    memo = [[0 for _ in range(len(pile2) + 1)] for _ in range(len(pile1) + 1)]
+
+    # Creating the base case for the columns, where the first two columns are the original coins and the rest are the sum
+    # of the previous coins
+    for i in range(len(pile2)):
+        if i == 0:
+            memo[0][1] = pile2[0]
+        elif i == 1:
+            memo[0][2] = pile2[1]
+        else:
+            memo[0][i + 1] = memo[0][i - 1] + pile2[i]
+
+    # Creating the base case for the rows, where the first two rows are the original coins and the rest are the sum of
+    # the previous coins
+    for i in range(len(pile1)):
+        if i == 0:
+            memo[1][0] = pile1[0]
+        elif i == 1:
+            memo[2][0] = pile1[1]
+        else:
+            memo[i + 1][0] = memo[i - 1][0] + pile1[i]
+
+    # The base case
+    memo[0][0] = 0
+
+    # Going row by row
+    for i in range(1, len(pile1) + 1):
+        # For each row go through each column
+        for j in range(1, len(pile2) + 1):
+            # The previous previous answer at the top of the memo[i][j]
+            back_up = memo[i - 2][j]
+            # The previous previous answer at the left side of the memo[i][j]
+            back_left = memo[i][j - 2]
+            # The previous answer diagonally up and left from the memo[i][j]
+            back_diag = memo[i - 1][j - 1]
+
+            # Finding the minimum between the top answer and the diagonal answer
+            if back_up < back_diag:
+                # Happens only when j = 1, so default choice is the diagonal answer
+                if back_up == 0:
+                    result_up = back_diag
+                # back_up was smaller than back_diag
+                else:
+                    result_up = back_up
+            # back_diag was smaller than back_up
+            else:
+                result_up = back_diag
+
+            # Finding the minimum between the left answer and the diagonal answer
+            if back_left < back_diag:
+                # Happens only when i = 1, so default choices is diagonal answer
+                if back_left == 0:
+                    result_left = back_diag
+                # back_left was smaller than back_diag
+                else:
+                    result_left = back_left
+            # back_diag was smaller than back_left
+            else:
+                result_left = back_diag
+
+            # Check which sum of the two minimums are bigger
+            if (pile1[i - 1] + result_up) > (pile2[j - 1] + result_left):
+                # Coin from pile1 gave a larger score
+                memo[i][j] = result_up + pile1[i - 1]
+            else:
+                # Coin from pile2 gave the larger score
+                memo[i][j] = result_left + pile2[j - 1]
+
+    # Counters
+    i = len(pile1)
+    j = len(pile2)
+    # The highest score player1 can achieve
+    result = memo[len(pile1)][len(pile2)]
+    # List of choices made by both players
+    choices = []
+    # Counter to keep track who's turns it is odd number is player1 and even is player2
+    count = 1
+    # Loop goes until it reaches the base case which is memo[0][0]
+    while i != 0 or j != 0:
+        # Gets the previous top answer of the memo[i][j]
+        back_up = memo[i - 1][j]
+        # Gets the previous left answer of teh memo[i][j]
+        back_left = memo[i][j - 1]
+
+        # If both left and up answer are the same
+        if back_up == back_left:
+            # Check whether its the player2 turn
+            if count % 2 == 0:
+                # player2 defaults takes from pile2
+                j -= 1
+                choices.append(2)
+            # Player1 turn
+            else:
+                # Check whether we can take from both left and top previous answers
+                if j - 2 >= 0 and i - 2 >= 0:
+                    # Takes the larger score of the previous previous left and top answers
+                    if memo[i][j - 2] > memo[i - 2][j]:
+                        # Coin from pile2 gave a larger score
+                        j -= 1
+                        choices.append(2)
+                    else:
+                        # Coin from pile1 gave a larger score
+                        i -= 1
+                        choices.append(1)
+                else:
+                    # If both the last two coins from both piles are the same
+                    if j - 2 < 0 and i - 2 < 0:
+                        # Default takes from pile1
+                        i -= 1
+                        choices.append(1)
+                    # If there is not more left choices, meaning no more coins on pile2
+                    elif j - 2 < 0:
+                        # Take from pile1
+                        i -= 1
+                        choices.append(1)
+                    # If there is not more top choices, meaning no more coins on pile1
+                    else:
+                        # Take from pile2
+                        j -= 1
+                        choices.append(2)
+        # Takes the smaller of the two choices
+        elif back_up > back_left:
+            # Takes coin from pile2
+            j -= 1
+            choices.append(2)
+        else:
+            # Takes coin from pile1
+            i -= 1
+            choices.append(1)
+
+        # Increment count to keep track who playing
+        count += 1
+
+    return (result, choices)
+
+
+def is_in(grid, word):
+    """
+    This function also use dynamic programming. It searches where the snake like word is in the the given grid. The as
+    long as the letters are either beside or diagonal to each other. It is considered as a word.
+
+    :param grid: n*n grid that only contains small alphabets in the each cell, where n is the size of the grid
+    :param word: a sequence of lower case english word
+    :return: list of tuples representing the grid cells that make up the word
+
+    The memo table is n*n big and in each cell of this table it holds a array of zeros the size of the word. The memo
+    table is filled up by going through the word letter by letter, so it goes through the first letter of the word and
+    it each cell of the grid it check whether the grid cell's letter matches word's first letter, if it does the first
+    position of array in the cell of the memo table that corresponds to the grid changes to 1 indicating that the word
+    can start here.
+
+    This happen for the rest of the letters in the word, where it has one extra step. The extra step is that it checks
+    the possible neighbouring cells whether it contains the previous letter.
+
+    To backtrack it checks all memo table whether it contains an array the has the last element 1. if it does, it then
+    check its neighbouring cell whether it has the previous letter back check the memo table array at the previous
+    letter index.
+    """
+
+    # Each row is a list containing a list
+    memo = [[[0 for _ in range(len(word))] for _ in range(len(grid))] for _ in range(len(grid))]
+    # Base case is when the memo is all zeros
+
+    # Another base case is finding the first letter of the word on the grid
+    if len(word) != 0:
+        for i in range(len(memo)):
+            for j in range(len(memo)):
+                if grid[i][j] == word[0]:
+                    # At the first index of the array at the memo[i][j] grid
+                    memo[i][j][0] = 1
+
+    # Takes the second letter onwards
+    for l_index in range(1, len(word)):
+        for i in range(len(grid)):
+            for j in range(len(grid)):
+                # If the letter matched the letter in the grid
+                if word[l_index] == grid[i][j]:
+                    # Check whether the matched letter at l_index is next to the previous letter
+                    # Make sure there exist a row before
+                    if i - 1 >= 0:
+                        # Top left
+                        if j - 1 >= 0:
+                            if memo[i - 1][j - 1][l_index - 1] == 1:
+                                memo[i][j][l_index] = 1
+                        # Top right
+                        if j + 1 < len(memo):
+                            if memo[i - 1][j + 1][l_index - 1] == 1:
+                                memo[i][j][l_index] = 1
+                        # Top
+                        if memo[i - 1][j][l_index - 1] == 1:
+                            memo[i][j][l_index] = 1
+                    # Left
+                    if j - 1 >= 0:
+                        if memo[i][j - 1][l_index - 1] == 1:
+                            memo[i][j][l_index] = 1
+                    # Right
+                    if j + 1 < len(memo):
+                        if memo[i][j + 1][l_index - 1] == 1:
+                            memo[i][j][l_index] = 1
+                    # Make sure there exist a row after
+                    if i + 1 < len(memo):
+                        # Bottom left
+                        if j - 1 >= 0:
+                            if memo[i + 1][j - 1][l_index - 1] == 1:
+                                memo[i][j][l_index] = 1
+                        # Bottom right
+                        if j + 1 < len(memo):
+                            if memo[i + 1][j + 1][l_index - 1] == 1:
+                                memo[i][j][l_index] = 1
+                        # Bottom
+                        if memo[i + 1][j][l_index - 1] == 1:
+                            memo[i][j][l_index] = 1
+
+    last_index = len(word) - 1
+    # To hold the list of grid cells that correspond to the word
+    list_of_tuples = [0] * len(word)
+
+    # To find the last valid letter in the memo table
+    for i in range(len(memo)):
+        for j in range(len(memo)):
+            # Takes the first possible valid last letter answer
+            if memo[i][j][last_index] == 1:
+                list_of_tuples[last_index] = (i, j)
+                break
+
+    # To check whether there exist a valid last letter in the memo table
+    if list_of_tuples[-1] != 0:
+        # To get the i and
+        [i, j] = list_of_tuples[len(word) - 1]
+        # To start from the second last word onwards
+        index = len(word) - 2
+        # To check whether the has been a valid coordinate already inserted into the tuple
+        while True:
+            # Checks whether there is a 1 at index at the position i and j
+            # To make sure the same letter is repeated consecutively
+            # Make sure there exist a row before
+            if i - 1 >= 0:
+                # Top left
+                if j - 1 >= 0:
+                    if memo[i - 1][j - 1][index] == 1:
+                        if list_of_tuples[index + 1] != (i - 1, j - 1):
+                            list_of_tuples[index] = (i - 1, j - 1)
+                # Top right
+                if j + 1 < len(memo):
+                    if memo[i - 1][j + 1][index] == 1:
+                        if list_of_tuples[index + 1] != (i - 1, j + 1):
+                            list_of_tuples[index] = (i - 1, j + 1)
+                # Top
+                if memo[i - 1][j][index] == 1:
+                    if list_of_tuples[index + 1] != (i - 1, j):
+                        list_of_tuples[index] = (i - 1, j)
+            # Left
+            if j - 1 >= 0:
+                if memo[i][j - 1][index] == 1:
+                    if list_of_tuples[index + 1] != (i, j - 1):
+                        list_of_tuples[index] = (i, j - 1)
+            # Right
+            if j + 1 < len(memo):
+                if memo[i][j + 1][index] == 1:
+                    if list_of_tuples[index + 1] != (i, j + 1):
+                        list_of_tuples[index] = (i, j + 1)
+            # Make sure there exist a row after
+            if i + 1 < len(memo):
+                # Bottom left
+                if j - 1 >= 0:
+                    if memo[i + 1][j - 1][index] == 1:
+                        if list_of_tuples[index + 1] != (i + 1, j - 1):
+                            list_of_tuples[index] = (i + 1, j - 1)
+                # Bottom right
+                if j + 1 < len(memo):
+                    if memo[i + 1][j + 1][index] == 1:
+                        if list_of_tuples[index + 1] != (i + 1, j + 1):
+                            list_of_tuples[index] = (i + 1, j + 1)
+                # Bottom
+                if memo[i + 1][j][index] == 1:
+                    if list_of_tuples[index + 1] != (i + 1, j):
+                        list_of_tuples[index] = (i + 1, j)
+
+            # To update the i and j into the next position
+            [i, j] = list_of_tuples[index]
+            # To go one letter back
+            index -= 1
+
+            # To break out of the loop, checks whether the list has been filled up
+            if list_of_tuples[0] != 0:
+                break
+        return list_of_tuples
+    else:
+        # Word could be found in the grid
+        return False
+
+
+grid = [['a', 'b', 'c', 'd'],
+        ['e', 'a', 'p', 'f'],
+        ['e', 'p', 'g', 'h'],
+        ['l', 'i', 'j', 'k']]
+
+if __name__ == "__main__":
+    best_score([5, 8, 2, 4, 1, 10, 2], [6, 2, 4, 5, 6, 9, 8])
+    best_score([20, 5], [1])
+    best_score([1, 2, 3], [1])
+
+    is_in(grid, "apple")
+    is_in(grid, "xylophone")
