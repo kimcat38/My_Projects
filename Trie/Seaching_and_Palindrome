@@ -1,0 +1,375 @@
+# Referenced from Ian's live programming sessions from Week 6 Lecture
+class Trie:
+    def __init__(self):
+        self.root_node = Node()
+
+    # To insert word and its song ID into the trie
+    def insert(self, word, song_id):
+        current_node = self.root_node
+        self.insert_aux(current_node, word, song_id)
+
+    # To enter each letter of the word recursively and having the last letter as a $ to hold the song ID of the word
+    def insert_aux(self, current_node, word, song_id, i=0):
+        if len(word) == i:
+            # At the end of the word add the $
+            if current_node.child[26] is None:
+                current_node.child[26] = Node()
+            # Store the song Id of the word in the $ node
+            current_node.insert_song_id(song_id)
+
+            # To store the word
+            current_node.child[26].insert_word(word)
+            # To store the index 26 to indicate that its the end of the word
+            current_node.child[26].letter_index = 26
+
+            # To update the count of the word and the letter index
+            current_node.check_word_count(26, current_node.get_len_song_ids())
+            return
+
+        index = ord(word[i]) - 97
+
+        # To add a new node if the letter doesn't currently exist in the trie
+        if current_node.child[index] is None:
+            current_node.child[index] = Node()
+
+        # To go to the next letter
+        i += 1
+        # Moving on to the next letter in the trie
+        self.insert_aux(current_node.child[index], word, song_id, i)
+
+        # To update the most common word count for the current node, executed when recursive function reached the end
+        # and it going back up
+        current_node.check_word_count(index, current_node.child[index].get_count())
+
+    # Used in Task 3
+    # To insert a word into the trie with the letter index in the original word
+    def forward_insert(self, word, word_index):
+        current_node = self.root_node
+        self.forward_insert_aux(current_node, word, word_index)
+
+    # To insert every letter of the word into the trie along with it's index
+    def forward_insert_aux(self, current_node, word, word_index, i=0):
+        if len(word) == i:
+            if current_node.child[26] is None:
+                current_node.child[26] = Node()
+            return
+
+        index = ord(word[i]) - 97
+
+        # To create a new node if the letter doesn't exist
+        if current_node.child[index] is None:
+            current_node.child[index] = Node()
+        # To insert the index of that letter in the original word
+        current_node.child[index].insert_index(word_index)
+
+        # To go to the next letter
+        i += 1
+        word_index += 1
+        # To move to the next node
+        self.forward_insert_aux(current_node.child[index], word, word_index, i)
+
+    # Used in Task 3
+    # To try to insert a reverse suffix of a word into an already built trie
+    def reverse_insert(self, word, word_index):
+        current_node = self.root_node
+        # To hold all the possible palindrome tuples for the word
+        list_of_tuples = []
+        # To return the last index of the word that matches the trie
+        self.reverse_insert_aux(current_node, word, word_index, list_of_tuples)
+        return list_of_tuples
+
+    # To go to every possible node when a letter from the word exist in the already built trie
+    def reverse_insert_aux(self, current_node, word, word_index, list_of_tuples, i=0):
+        # If the whole word exists in the trie
+        if len(word) == i:
+            # Return the previous index of the word that matches the letter in the trie
+            return
+
+        index = ord(word[i]) - 97
+
+        # If the current node is empty, it means the letter doesn't exist in the trie
+        if current_node.child[index] is not None:
+            # Returns the previous index of the word that matches the letter in the trie
+            end_index = current_node.child[index].get_index()
+            # Check whether the index exists
+            if end_index is not None:
+                # To append the valid indexes
+                list_of_tuples.append((word_index, end_index))
+        else:
+            # To stop the recursion from going further down
+            return
+
+        i += 1
+        word_index -= 1
+
+        # To check whether the next letter matches the letters in the trie
+        self.reverse_insert_aux(current_node.child[index], word, word_index, list_of_tuples, i)
+
+    # Used in Task 2
+    # To search for the word in the trie and retrieve the most common word in the trie that has word in it
+    def search_common(self, word):
+        current_node = self.root_node
+        return self.search_common_aux(current_node, word)
+
+    # To go through all the letter of the word
+    def search_common_aux(self, current_node, word, i=0):
+        # The end of the word
+        if len(word) == i:
+            # To find the next letter of the most common word
+            index = current_node.letter_index
+
+            # To check if we have reached the end of the most common word
+            if index == 26:
+                # Return the most common word
+                return current_node.child[26].word
+
+            # To go to the next letter of the common word
+            return self.search_common_aux(current_node.child[index], word, i)
+
+        index = ord(word[i]) - 97
+
+        # Check whether letter exist in trie
+        if current_node.child[index] is None:
+            return "Not found"
+
+        i += 1
+        # To go to the next letter
+        return self.search_common_aux(current_node.child[index], word, i)
+
+    # Used in Task 1
+    # To find the word in the trie
+    def search(self, word):
+        current_node = self.root_node
+        # Return the song IDs or Not found
+        return self.search_aux(current_node, word)
+
+    # To recursively find the letters of the word in trie
+    def search_aux(self, current_node, word, i=0):
+        if len(word) == i:
+            # Check if the word exist in trie
+            if current_node.child[26] is None:
+                # Word doesn't exist in trie
+                return "Not found"
+            # Word exist in trie
+            return current_node.song_ids
+
+        index = ord(word[i]) - 97
+
+        # Check whether letter exist in trie
+        if current_node.child[index] is None:
+            return "Not found"
+
+        # To go to the next letter of th word
+        i += 1
+
+        # To go the next letter in the Trie
+        return self.search_aux(current_node.child[index], word, i)
+
+
+class Node:
+    def __init__(self, size=27):
+
+        self.child = [None] * size
+
+        # Used in Task 1
+        # To hold the list of song IDs
+        self.song_ids = []
+
+        # Used in Task 2
+        # To hold the word that is most common at that node
+        self.word = None
+        # The count of that word in the trie
+        self.count = 0
+        # To hold the common words letter's index
+        self.letter_index = None
+
+        # Used in Task 3
+        # To hold the list of indexes of the suffix words
+        self.indexes = []
+
+    # To insert in the song id
+    def insert_song_id(self, song_id):
+        if not self.song_ids:
+            self.song_ids.append(song_id)
+        else:
+            # Check whether the last song id is the same as the one being inserted
+            if self.song_ids[-1] != song_id:
+                self.song_ids.append(song_id)
+
+    # To insert the word into the node
+    def insert_word(self, word):
+        self.word = word
+
+    # To get the length of the song_id data
+    def get_len_song_ids(self):
+        return len(self.song_ids)
+
+    # To get the count of the word stored at the node
+    def get_count(self):
+        return self.count
+
+    # To get the most common word at that node
+    def get_word(self):
+        return self.word
+
+    # To check whether the inserted count is greater than the current one at the node
+    def check_word_count(self, other_letter_index, other_count):
+        if self.count < other_count:
+            # Update the node to the latest count and word
+            self.count = other_count
+            self.letter_index = other_letter_index
+
+    # To insert the index into the list of indexes at the node
+    def insert_index(self, index):
+        self.indexes.append(index)
+
+    # To get the last index of the list
+    def get_index(self):
+        # If self.indexes is empty
+        if self.indexes:
+            index = self.indexes.pop(-1)
+            return index
+        else:
+            return None
+
+
+def lookup(data_file, query_file):
+    data_lines = open(data_file, "r")
+    data_trie = Trie()
+
+    for line in data_lines:
+        line = line.strip()
+        # To get the song ID of the lyric
+        [song_id, lyric_line] = line.split(":")
+        lyric_words = lyric_line.split(" ")
+
+        # To go through all the words in the song lyric
+        for word in lyric_words:
+            # Insert all the words into the trie
+            data_trie.insert(word, song_id)
+
+    data_lines.close()
+
+    query_word = open(query_file, "r")
+    list_of_query_words = []
+    # To get all the words that need to be search in the trie
+    for word in query_word:
+        que_word = word.strip()
+        list_of_query_words.append(que_word)
+
+    query_word.close()
+
+    new_file = open("song_ids.txt", "w")
+
+    for word in list_of_query_words:
+        song_ids = data_trie.search(word)
+        # To write the results in the text file
+        if song_ids != 'Not found':
+            # The word was found in the trie
+            for i in range(len(song_ids) - 1):
+                new_file.write(str(song_ids[i]) + " ")
+            new_file.write(str(song_ids[len(song_ids) - 1]) + "\n")
+        else:
+            # The word was not found in the trie
+            new_file.write(song_ids + "\n")
+
+    new_file.close()
+
+
+def most_common(data_file, query_file):
+    data_lines = open(data_file, "r")
+    data_trie = Trie()
+
+    for line in data_lines:
+        line = line.strip()
+        # To get the song id and the words
+        [song_id, lyric_line] = line.split(":")
+        lyric_words = lyric_line.split(" ")
+
+        for word in lyric_words:
+            # Insert the words into the trie (song_id is not used for this function)
+            data_trie.insert(word, song_id)
+
+    data_lines.close()
+
+    query_word = open(query_file, "r")
+    list_of_query_words = []
+    for word in query_word:
+        que_word = word.strip()
+        # To get the list of query words
+        list_of_query_words.append(que_word)
+
+    query_word.close()
+
+    new_file = open("most_common_lyrics.txt", "w")
+
+    for word in list_of_query_words:
+        # To get the most common word with the word in it
+        common_word = data_trie.search_common(word)
+
+        # To write the word into the text file
+        new_file.write(common_word + "\n")
+
+    new_file.close()
+
+
+def palindromic_substrings(S):
+    # To hold all the letter and its indexes
+    string_trie = Trie()
+
+    # Inserting all the suffixes of the word
+    for i in range(len(S)):
+        string_trie.forward_insert(S[i:], i)
+
+    # To get the reverse version of the word
+    reversed_S = S[::-1]
+    # To hold all possible, duplicates of tuple palindromes
+    substrings = []
+
+    # The index to insert used when checking whether the letter exist in the trie
+    j = len(reversed_S) - 1
+    # To go through all the suffixes of the reverse word
+    for i in range(len(S)):
+        # To check whether the letter in the word exist in the trie
+        list_not_valid_tuples = string_trie.reverse_insert(reversed_S[i:], j)
+
+        # To decrement the index
+        j -= 1
+        # To extract all the valid palindromes
+        list_of_valid_tuples = is_palindrome(list_not_valid_tuples)
+
+        # Check whether its empty
+        if list_of_valid_tuples:
+            # To go through all tuple in list and append it to the main list of tuples
+            for tuple in list_of_valid_tuples:
+                substrings.append(tuple)
+
+    # The final list od valid tuples
+    list_of_tuples = []
+    # To go through all the tuples in the list and check whether there are duplicates
+    for tuple in substrings:
+        # So there are no duplicate tuples in the list_of_tuples
+        if tuple not in list_of_tuples:
+            list_of_tuples.append(tuple)
+
+    return list_of_tuples
+
+
+def is_palindrome(list_of_tuples):
+    list_of_valid_tuples = []
+
+    # To go through all the tuples
+    for tuple in list_of_tuples:
+        first_index = tuple[0]
+        second_index = tuple[1]
+
+        # Check whether first and second indexes are the same, continue as they aren't valid
+        if first_index == second_index:
+            continue
+        # Check which index should be placed first in the tuple
+        elif first_index > second_index:
+            list_of_valid_tuples.append((second_index, first_index))
+        else:
+            list_of_valid_tuples.append((first_index, second_index))
+
+    return list_of_valid_tuples
