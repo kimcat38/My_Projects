@@ -1,7 +1,6 @@
 import Home from './routes/home/home.component.jsx';
 import SignIn from './routes/sign-in/sign-in.component.jsx';
 import Navigation from './routes/navigation/navigation.component.jsx';
-
 import { Routes, Route } from 'react-router-dom';
 
 const Shop = () => {
