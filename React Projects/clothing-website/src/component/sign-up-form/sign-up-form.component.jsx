@@ -1,14 +1,14 @@
 import { useState } from "react";
 
-import FormInput from "../form-input/form-input.component";
-import Button from "../button/button.component";
-
 import {
   createAuthUserWithEmailAndPassword,
   createUserDocumentFromAuth,
 } from "../../utils/firebase/firebase.utils";
 
-import "./sign-up-form.styles.scss";
+import FormInput from "../form-input/form-input.component";
+import Button from "../button/button.component";
+
+import { SignUpContainer, SignUpTitle } from "./sign-up-form.styles.jsx";
 
 const defaultFormFields = {
   displayName: "",
@@ -27,18 +27,15 @@ const SignUpForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (password !== confirmPassword) {
       alert("passwords do not match");
       return;
     }
-
     try {
       const { user } = await createAuthUserWithEmailAndPassword(
         email,
         password
       );
-
       await createUserDocumentFromAuth(user, { displayName });
       resetFormFields();
     } catch (error) {
@@ -52,14 +49,14 @@ const SignUpForm = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
     setFormFields({ ...formFields, [name]: value });
   };
 
   return (
-    <div className="sign-up-container">
-      <h2>Don't have an account?</h2>
+    <SignUpContainer>
+      <SignUpTitle>Don't have an account?</SignUpTitle>
       <span>Sign up with your email and password</span>
+
       <form onSubmit={handleSubmit}>
         <FormInput
           label="Display Name"
@@ -96,9 +93,10 @@ const SignUpForm = () => {
           name="confirmPassword"
           value={confirmPassword}
         />
+
         <Button type="submit">Sign Up</Button>
       </form>
-    </div>
+    </SignUpContainer>
   );
 };
 
