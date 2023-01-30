@@ -4,11 +4,11 @@ import { useDispatch } from "react-redux";
 
 import { checkUserSession } from "./store/user/user.action";
 
-import Home from "./routes/home/home.component.jsx";
-import Authentication from "./routes/authentication/authentication.component.jsx";
-import Navigation from "./routes/navigation/navigation.component.jsx";
-import Shop from "./routes/shop/shop.component.jsx";
-import Checkout from "./routes/checkout/checkout.component.jsx";
+import Home from "./routes/home/home.component";
+import Authentication from "./routes/authentication/authentication.component";
+import Navigation from "./routes/navigation/navigation.component";
+import Shop from "./routes/shop/shop.component";
+import Checkout from "./routes/checkout/checkout.component";
 
 const App = () => {
   const dispatch = useDispatch();

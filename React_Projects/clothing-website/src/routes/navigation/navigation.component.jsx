@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectIsCartOpen } from "../../store/cart/cart.selector";
-import { signOutStart } from "../../store/user/user.action.js";
+import { signOutStart } from "../../store/user/user.action";
 import { selectCurrentUser } from "../../store/user/user.selector";
 
 import CartIcon from "../../component/cart-icon/cart-icon.component.jsx";

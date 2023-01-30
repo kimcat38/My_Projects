@@ -9,7 +9,7 @@ import {
   signOutUser,
 } from "../../utils/firebase/firebase.utils";
 
-import USER_ACTION_TYPES from "./user.types";
+import { USER_ACTION_TYPES } from "./user.types";
 import {
   signInSuccess,
   signInFailed,
