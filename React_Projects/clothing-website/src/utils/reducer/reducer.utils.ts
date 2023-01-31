@@ -8,9 +8,11 @@ type Matchable<AC extends () => AnyAction> = AC & {
 export function withMatcher<AC extends () => AnyAction & { type: string }>(
   actionCreator: AC
 ): Matchable<AC>;
+
 export function withMatcher<
   AC extends (...args: any[]) => AnyAction & { type: string }
 >(actionCreator: AC): Matchable<AC>;
+
 export function withMatcher(actionCreator: Function) {
   const type = actionCreator().type;
   return Object.assign(actionCreator, {
@@ -23,8 +25,9 @@ export function withMatcher(actionCreator: Function) {
 
 export type ActionWithPayload<T, P> = {
   type: T;
-  payload?: P;
+  payload: P;
 };
+
 export type Action<T> = {
   type: T;
 };
@@ -33,10 +36,12 @@ export function createAction<T extends string, P>(
   type: T,
   payload: P
 ): ActionWithPayload<T, P>;
+
 export function createAction<T extends string>(
   type: T,
   payload: void
 ): Action<T>;
+
 export function createAction<T extends string, P>(type: T, payload: P) {
   return { type, payload };
 }
