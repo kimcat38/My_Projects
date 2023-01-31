@@ -6,15 +6,15 @@ import { selectIsCartOpen } from "../../store/cart/cart.selector";
 import { signOutStart } from "../../store/user/user.action";
 import { selectCurrentUser } from "../../store/user/user.selector";
 
-import CartIcon from "../../component/cart-icon/cart-icon.component.jsx";
-import CartDropdown from "../../component/cart-dropdown/cart-dropdown.component.jsx";
+import CartIcon from "../../component/cart-icon/cart-icon.component";
+import CartDropdown from "../../component/cart-dropdown/cart-dropdown.component";
 
 import {
   NavigationContainer,
   LogoContainer,
   NavLinks,
   NavLink,
-} from "./navigation.styles.jsx";
+} from "./navigation.styles";
 
 import { ReactComponent as CrwnLogo } from "../../assets/crown.svg";
 

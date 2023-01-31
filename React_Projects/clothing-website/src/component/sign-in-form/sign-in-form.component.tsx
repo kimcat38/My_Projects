@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import { useDispatch } from "react-redux";
 
 import {
@@ -6,14 +6,14 @@ import {
   googleSignInStart,
 } from "../../store/user/user.action";
 
-import FormInput from "../form-input/form-input.component.jsx";
-import Button, { BUTTON_TYPE_CLASSES } from "../button/button.component.jsx";
+import FormInput from "../form-input/form-input.component";
+import Button, { BUTTON_TYPE_CLASSES } from "../button/button.component";
 
 import {
   SignInContainer,
   SignInTitle,
   ButtonContainer,
-} from "./sign-in-form.styles.jsx";
+} from "./sign-in-form.styles";
 
 const defaultFormFields = {
   email: "",
@@ -33,7 +33,7 @@ const SignInForm = () => {
     dispatch(googleSignInStart());
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       dispatch(emailSignInStart(email, password));
@@ -43,7 +43,7 @@ const SignInForm = () => {
     }
   };
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormFields({ ...formFields, [name]: value });
   };

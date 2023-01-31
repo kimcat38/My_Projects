@@ -3,12 +3,13 @@ import {
   createAction,
   withMatcher,
 } from "../../utils/reducer/reducer.utils";
+import { CategoryItem } from "../categories/category.types";
 
 import { CartItem, CART_ACTION_TYPES } from "./cart.types";
 
 const addCardItem = (
   cartItems: CartItem[],
-  cartItemToAdd: CartItem
+  cartItemToAdd: CategoryItem
 ): CartItem[] => {
   const existingCartItem = cartItems.find(
     (cartItem) => cartItem.id === cartItemToAdd.id
@@ -72,7 +73,7 @@ export const setCartItems = withMatcher(
 
 export const addItemToCart = (
   cartItems: CartItem[],
-  productToAdd: CartItem
+  productToAdd: CategoryItem
 ) => {
   const newCartItems = addCardItem(cartItems, productToAdd);
   return setCartItems(newCartItems);
