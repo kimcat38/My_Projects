@@ -4,7 +4,7 @@ public class Multiplier {
         int product = multiply(3,5);
         System.out.println(product);
     }
-    public static int multiply(int a, int b) {\
+    public static int multiply(int a, int b) {
         int result = a * b;
         return result;
     }
